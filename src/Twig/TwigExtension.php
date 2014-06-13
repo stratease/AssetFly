@@ -29,4 +29,8 @@ class TwigExtension extends Twig_Extension
         //
         $this->assetLoader->add
     }
+    public function getName()
+    {
+        return 'assetfly';
+    }
 }
