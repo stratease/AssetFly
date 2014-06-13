@@ -1,0 +1,34 @@
+<html>
+    <head>
+        {# Add a css file to the stylesheets asset output group. #}
+        {{ assetfly_add_css('/page.css', 'stylesheets') }}
+        
+        {# Add a sass (scss) file to the stylesheets asset output group. #}
+        {{ assetfly_add_sass1('/page.scss', 'stylesheets') }}
+        
+        {# We use the deferred flag to wait for other included templates' assets before compiling this block, otherwise twig's default behavior is to not wait before compiling that block #}
+        {% block stylesheets deferred %}
+        
+            {# Get all the compiled assets for a group. It's a list of the raw compiled files in debug mode, otherwise it's a single compressed file #}
+            {% for asset_url in assetfly_get_urls('stylesheets') %}
+                <link href="{{ asset_url }}" rel="stylesheet">
+            {% endfor %}
+        
+        {% endblock %}
+    </head>
+    <body>
+        <div class="head">
+            <h1>Awesome stuff!</h1>
+        </div>
+        <div class="content">
+            <p>Lorem Ipsum stuff...</p>
+        </div>
+        {% include "module.twig" %}
+        
+        {# Of course we do javascript too! #}
+        {{ assetfly_add_js('/unminified.js', 'javascripts') }}
+        {% for asset_url in assetfly_get_urls('javascripts') %}
+            <script src="{{ asset_url }}"></script>
+        {% endfor %}
+    </body>
+</html>
