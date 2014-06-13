@@ -2,7 +2,8 @@
     "name": "stratease/assetfly",
     "description": "PHP asset management library, with a modular twig integration",
     "require": {
-        "phive/twig-extensions-deferred": "0.*"
+        "phive/twig-extensions-deferred": "0.*",
+        "symfony/process":"2.*"
     },
     "require-dev": {
         "phpunit/phpunit": "3.*",
@@ -15,5 +16,9 @@
             "email": "stratease@gmail.com"
         }
     ],
-    "psr-4": {"stratease\\AssetFly": "src/"}
+    "autoload":{
+        "psr-4":{
+            "stratease\\AssetFly\\": "src/"
+        }
+    }
 }

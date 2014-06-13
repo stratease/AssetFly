@@ -12,7 +12,7 @@ trait ConfiguratorTrait {
             if(is_callable($callable)) {
                 call_user_func_array($callable, [$val]);
             } else {
-                throw new \ArgumentException("Invalid property ".__CLASS__.":'".$field."'! Either no setter defined, or the property doesn't exist.");
+                throw new \Exception("Invalid property ".__CLASS__.":'".$field."'! Either no setter defined, or the property doesn't exist.");
             }
         }
     }

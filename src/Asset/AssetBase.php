@@ -5,6 +5,11 @@ use stratease\AssetFly\Util\ConfiguratorTrait;
 abstract class AssetBase implements AssetInterface
 {
     use ConfiguratorTrait;
+
+    /**
+     * @var string Absolute path to source file
+     */
+    protected $sourcePath;
     /**
      * @param string $sourceFile Absolute path to source file
      * @param array $options
@@ -23,20 +28,25 @@ abstract class AssetBase implements AssetInterface
     {
         return false;
     }
-    
-    public function setSourceFile($sourceFile)
+
+    /**
+     * @param $sourceFile
+     * @return $this
+     * @throws \Exception
+     */
+    public function setSourcePath($sourceFile)
     {
-        $this->sourceFile = $sourceFile;
+        $this->sourcePath = $sourceFile;
         // check for our file
-        if(is_file($this->sourceFile) === false) {
+        if(is_file($this->sourcePath) === false) {
             throw new \Exception("Unable to locate assets source file '".$sourceFile."'.");
         }
         
         return $this;
     }
     
-    public function getSourceFile()
+    public function getSourcePath()
     {
-        return $this->sourceFile;
+        return $this->sourcePath;
     }
 }

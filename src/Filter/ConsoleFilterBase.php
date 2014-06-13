@@ -2,7 +2,7 @@
 namespace stratease\AssetFly\Filter;
 use stratease\AssetFly\Filter\FilterInterface;
 use stratease\AssetFly\Util\ConfiguratorTrait;
-abstract class ConsoleFilterBase implements ConsoleFilterInterface
+abstract class ConsoleFilterBase implements FilterInterface
 {
     use ConfiguratorTrait;
     /**

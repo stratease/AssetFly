@@ -1,33 +1,35 @@
 <?php
 namespace stratease\AssetFly\Twig;
 use stratease\AssetFly\AssetLoader;
-class TwigExtension extends Twig_Extension
+use Phive\Twig\Extensions\Deferred\DeferredExtension;
+use stratease\AssetFly\Asset\TextFile;
+class TwigExtension extends \Twig_Extension
 {
     protected $assetLoader;
-    public function __construct(AssetLoader $assetLoader)
-    {
-        $this->assetLoader = $assetLoader;
-    }
-    public function initRuntime(Twig_Environment $environment)
+    public function __construct(\Twig_Environment $environment, AssetLoader $assetLoader)
     {
         // lets just add deferred
-        $environment->addExtension(new Phive\Twig\Extensions\Deferred\DeferredExtension());
-        
-        // lets add our magic joo joo..
-        
-        // this will map to our predefined filters dynamically... flyAddSass, flyAddMyCustomSass etc..
-        $function = new Twig_SimpleFunction('assetfly_add_*', [$this, 'addAsset']);
-        $environment->addFunction($function);
+        $environment->addExtension(new DeferredExtension());
+
+        $this->assetLoader = $assetLoader;
     }
-    
     public function getFunctions()
     {
-        return ['assetfly_add_*'];
+        $funcs = [];
+        // this will map to our predefined filters dynamically... flyAddSass, flyAddMyCustomSass etc..
+        $funcs[] = new \Twig_SimpleFunction('assetfly_add_*', [$this, 'addAsset']);
+        // this fetches urls based on filter group
+        $funcs[] = new \Twig_SimpleFunction('assetfly_get_urls', [$this, 'getAssetUrls']);
+        return $funcs;
     }
-    public function addAsset($filterName, $arguments)
+    public function addAsset($filterGroup, $webFile)
     {
-        //
-        $this->assetLoader->add
+        $asset = new TextFile($this->assetLoader->getWebDirectory().'/'.$webFile);
+        $this->assetLoader->addAsset($filterGroup, $asset);
+    }
+    public function getAssetUrls($filterGroup)
+    {
+        return ['bob'];
     }
     public function getName()
     {
