@@ -1,10 +1,12 @@
 <html>
     <head>
+        <title>Demo of the AssetFlyness! It's supafly!!</title>
+        
         {# Add a css file to the stylesheets asset output group. #}
-        {{ assetfly_add_css('/page.css', 'stylesheets') }}
+        {{ assetfly_add_css('/assets/page.css', 'stylesheets') }}
         
         {# Add a sass (scss) file to the stylesheets asset output group. #}
-        {{ assetfly_add_sass1('/page.scss', 'stylesheets') }}
+        {{ assetfly_add_sass1('/assets/page.scss', 'stylesheets') }}
         
         {# We use the deferred flag to wait for other included templates' assets before compiling this block, otherwise twig's default behavior is to not wait before compiling that block #}
         {% block stylesheets deferred %}
@@ -25,8 +27,7 @@
         </div>
         {% include "module.twig" %}
         
-        {# Of course we do javascript too! #}
-        {{ assetfly_add_js('/unminified.js', 'javascripts') }}
+        {# Of course we do javascript too! #}        
         {% for asset_url in assetfly_get_urls('javascripts') %}
             <script src="{{ asset_url }}"></script>
         {% endfor %}

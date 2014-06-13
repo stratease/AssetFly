@@ -1,4 +1,6 @@
-{{ assetfly_add_css('/module.css', 'stylesheets') }}
+{{ assetfly_add_css('/assets/module.css', 'stylesheets') }}
 <div class="content module">
     I'm a module with modular stylesheets loaded too! 
 </div>
+{# oh yah... don't forget our special modules js stuff! #}
+{{ assetfly_add_js('/assets/unminified.js', 'javascripts') }}
