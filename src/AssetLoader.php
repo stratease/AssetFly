@@ -29,6 +29,11 @@ class AssetLoader
      * @var bool Flag to output raw and precompiled files, no minification or concatting done
      */
     protected $debug = false;
+    
+    /**
+     *@var bool internal flag to determine if we compiled filters yet
+     */
+    protected $isCompiled = false;
     /**
      * @param array $options
      */
@@ -91,7 +96,11 @@ class AssetLoader
 
     public function addAsset($filterGroup, AssetInterface $asset)
     {
-
+        $assets = isset($this->assets[$filterGroup]) ? $this->assets[$filterGroup] : [];
+        $assets[] = $filter;
+        $this->assets[$filterGroup] = $assets;
+        
+        return $this;
     }
     /**
      *
@@ -103,6 +112,59 @@ class AssetLoader
         $this->debug = $value;
 
         return $this;
+    }
+    
+    public function getFilters($filterGroup = null)
+    {
+        if($filterGroup === null) {
+          
+            return $this->filters;
+        } else {
+          
+            return isset($this->filters[$filterGroup]) ? $this->filters[$filterGroup] : [];
+        }
+    }
+    public function getAssets($filterGroup = null)
+    {
+        if($filterGroup === null) {
+          
+            return $this->assets;
+        } else {
+          
+            return isset($this->assets[$filterGroup]) ? $this->assets[$filterGroup] : [];
+        }
+    }
+    public function compile($filterGroup)
+    {
+        $assets = $this->getAssets($filterGroup);
+        $filters = $this->getFilters($filterGroup);
+        
+        // process all the assets 
+        foreach($assets as $i => $asset)
+        {
+            foreach($filters as $filter)
+            {
+                // overwrite with processed asset
+                $asset = $filter->processAsset($asset);
+            }
+            unset($assets[$i]);
+            $assets[$i] = $asset;
+        }
+        
+        // @todo do we concat ?
+        
+        return $assets;
+    }
+    public function getAssetUrls($filterGroup)
+    {
+        $urls = [];
+        
+        $assets = $this->compile($filterGroup);
+        foreach($assets as $asset)
+        {
+            $urls[] = $asset->getUrl();
+        }
+        return $urls;
     }
 
     /**

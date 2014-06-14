@@ -43,57 +43,21 @@ class Sass extends ConsoleFilterBase
 
         $pb->setTimeout($this->getTimeout());
 
-        if ($dir = $asset->getSourceDirectory()) {
+        if ($dir = dirname($asset->getSourcePath())) {
             $pb->add('--load-path')->add($dir);
         }
 
-        if ($this->unixNewlines) {
-            $pb->add('--unix-newlines');
-        }
 
         if (pathinfo($asset->getSourcePath(), PATHINFO_EXTENSION) === 'scss') {
             $pb->add('--scss');
         }
 
-        if ($this->style) {
-            $pb->add('--style')->add($this->style);
-        }
-
-        if ($this->quiet) {
-            $pb->add('--quiet');
-        }
-
-        if ($this->debugInfo) {
-            $pb->add('--debug-info');
-        }
-
-        if ($this->lineNumbers) {
-            $pb->add('--line-numbers');
-        }
-
-        foreach ($this->loadPaths as $loadPath) {
-            $pb->add('--load-path')->add($loadPath);
-        }
-
-        if ($this->cacheLocation) {
-            $pb->add('--cache-location')->add($this->cacheLocation);
-        }
-
-        if ($this->noCache) {
-            $pb->add('--no-cache');
-        }
-
-        if ($this->compass) {
-            $pb->add('--compass');
-        }
-
-// input
-        $pb->add($input = tempnam(sys_get_temp_dir(), 'assetic_sass'));
-        file_put_contents($input, $asset->getContent());
+        // file input
+        $pb->add($asset->getSourcePath());
 
         $proc = $pb->getProcess();
         $code = $proc->run();
-        unlink($input);
+        var_dump($code, $proc->getOutput());
 
         if (0 !== $code) {
             throw new \Exception($asset->getSource()." failed. ".$proc->getOutput());

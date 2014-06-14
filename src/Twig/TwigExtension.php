@@ -29,7 +29,7 @@ class TwigExtension extends \Twig_Extension
     }
     public function getAssetUrls($filterGroup)
     {
-        return ['bob'];
+        return $this->assetLoader->getAssetUrls($filterGroup);        
     }
     public function getName()
     {

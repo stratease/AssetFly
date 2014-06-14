@@ -17,7 +17,7 @@ abstract class AssetBase implements AssetInterface
     public function __construct($sourceFile, array $options = [])
     {        
         $this->loadOptions($options);
-        $this->setSourceFile($sourceFile);
+        $this->setSourcePath($sourceFile);
     }
     
     /**
@@ -36,7 +36,7 @@ abstract class AssetBase implements AssetInterface
      */
     public function setSourcePath($sourceFile)
     {
-        $this->sourcePath = $sourceFile;
+        $this->sourcePath = realpath($sourceFile);
         // check for our file
         if(is_file($this->sourcePath) === false) {
             throw new \Exception("Unable to locate assets source file '".$sourceFile."'.");
