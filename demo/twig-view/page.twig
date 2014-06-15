@@ -27,9 +27,11 @@
         </div>
         {% include "module.twig" %}
         
-        {# Of course we do javascript too! #}        
+        {# Of course we do javascript too! #}      
+        {# todo ... 
         {% for asset_url in assetfly_get_urls('javascripts') %}
             <script src="{{ asset_url }}"></script>
         {% endfor %}
+        #}
     </body>
 </html>

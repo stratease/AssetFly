@@ -1,9 +1,10 @@
 <?php
 namespace stratease\AssetFly;
 use stratease\AssetFly\Asset\AssetInterface;
+use stratease\AssetFly\Asset\AssetCache;
 use stratease\AssetFly\Util\ConfiguratorTrait;
 use stratease\AssetFly\Filter\FilterInterface;
-
+use stratease\AssetFly\Filter\UglifyCss;
 class AssetLoader
 {
     use ConfiguratorTrait;
@@ -45,6 +46,11 @@ class AssetLoader
         $this->init();
     }
 
+    public function init()
+    {
+        // setup predefined filter groups
+        $this->addFilter('css', new UglifyCss());
+    }
     /**
      * @param bool $value Flag for caching
      * @return $this
@@ -90,6 +96,10 @@ class AssetLoader
      */
     public function addFilter($filterGroup, FilterInterface $filter)
     {
+        // filter group must be alpha numeric, underscored
+        if(preg_match('/[^a-zA-Z0-9_]/', $filterGroup)) {
+           throw new \Exception("Filter Group '".$filterGroup."' name is invalid. It may only be alpha numeric with underscores.");
+        }
         $filters = isset($this->filters[$filterGroup]) ? $this->filters[$filterGroup] : [];
         $filters[] = $filter;
         $this->filters[$filterGroup] = $filters;
@@ -97,12 +107,13 @@ class AssetLoader
         return $this;
     }
 
-    public function addAsset($filterGroup, AssetInterface $asset)
+    public function addAsset($filterGroup, $outputGroup, AssetInterface $asset)
     {
-        $assets = isset($this->assets[$filterGroup]) ? $this->assets[$filterGroup] : [];
+        $asset->setFilterGroup($filterGroup);
+        $assets = isset($this->assets[$outputGroup]) ? $this->assets[$outputGroup] : [];
         $assets[] = $asset;
 
-        $this->assets[$filterGroup] = $assets;
+        $this->assets[$outputGroup] = $assets;
         
         return $this;
     }
@@ -128,31 +139,51 @@ class AssetLoader
             return isset($this->filters[$filterGroup]) ? $this->filters[$filterGroup] : [];
         }
     }
-    public function getAssets($filterGroup = null)
+    public function getAssets($outputGroup = null)
     {
-        if($filterGroup === null) {
+        if($outputGroup === null) {
           
             return $this->assets;
         } else {
           
-            return isset($this->assets[$filterGroup]) ? $this->assets[$filterGroup] : [];
+            return isset($this->assets[$outputGroup]) ? $this->assets[$outputGroup] : [];
         }
     }
-    public function compile($filterGroup)
+    public function compile($outputGroup)
     {
-        $assets = $this->getAssets($filterGroup);
-        $filters = $this->getFilters($filterGroup);
-        print_r($filters);print_r($assets);exit;
+        $assets = $this->getAssets($outputGroup);
+
         // process all the assets 
         foreach($assets as $i => $asset)
         {
-            foreach($filters as $filter)
-            {
+            if($filters = $this->getFilters($asset->getFilterGroup())) {
+                // check if cached
+                $assetCache = new AssetCache($asset, $filters);
+                if($assetCache->isCached()) {
+                    $asset = $assetCache->getCache();
+                // else not cached, process
+                } else {
+                    // if debug (dev mode) only do precompilers
+                    if($this->getDebug()) {
+                        foreach($filters as $filter)
+                        {
+                            if($filter::isPrecompiler()) {
+                                $asset = $filter->processAsset($asset);
+                            }
+                        }
+                    } else {
+                        foreach($filters as $filter)
+                        {
+                            // do our magic!
+                            $asset = $filter->processAsset($asset);
+
+                        }
+                    }                    
+                }
                 // overwrite with processed asset
-                $asset = $filter->processAsset($asset);
+                unset($assets[$i]);
+                $assets[$i] = $asset;
             }
-            unset($assets[$i]);
-            $assets[$i] = $asset;
         }
         
         // @todo do we concat ?
@@ -160,14 +191,20 @@ class AssetLoader
         return $assets;
     }
 
-    public function getAssetUrls($filterGroup)
+    public function getAssetUrls($outputGroup)
     {
         $urls = [];
         
-        $assets = $this->compile($filterGroup);
+        $assets = $this->compile($outputGroup);
+        // if debug output each asset separately
+        // else concat 'em
+        if(!$this->getDebug()) {
+            $assets = AssetBase::concat($assets);
+        }
+        // get urls
         foreach($assets as $asset)
         {
-            $urls[] = $asset->getUrl();
+            $urls[] = ...
         }
         return $urls;
     }

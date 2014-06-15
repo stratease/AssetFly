@@ -22,14 +22,15 @@ class TwigExtension extends \Twig_Extension
         $funcs[] = new \Twig_SimpleFunction('assetfly_get_urls', [$this, 'getAssetUrls']);
         return $funcs;
     }
-    public function addAsset($filterGroup, $webFile)
+    public function addAsset($filterGroup, $webFile, $outputGroup)
     {
         $asset = new TextFile($this->assetLoader->getWebDirectory().'/'.$webFile);
-        $this->assetLoader->addAsset($filterGroup, $asset);
+        
+        $this->assetLoader->addAsset($filterGroup, $outputGroup, $asset);
     }
-    public function getAssetUrls($filterGroup)
+    public function getAssetUrls($outputGroup)
     {
-        return $this->assetLoader->getAssetUrls($filterGroup);        
+        return $this->assetLoader->getAssetUrls($outputGroup);        
     }
     public function getName()
     {

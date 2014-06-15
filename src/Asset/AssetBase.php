@@ -11,6 +11,10 @@ abstract class AssetBase implements AssetInterface
      */
     protected $sourcePath;
     /**
+     * @var string The filter group this asset is bound to
+     */
+    protected $filterGroup;
+    /**
      * @param string $sourceFile Absolute path to source file
      * @param array $options
      */
@@ -27,6 +31,24 @@ abstract class AssetBase implements AssetInterface
     public static function isPrecompiler()
     {
         return false;
+    }
+
+    public function setFilterGroup($group)
+    {
+        $this->filterGroup = $group;
+
+        return $this;
+    }
+
+    public function getFilterGroup()
+    {
+        return $this->filterGroup;
+    }
+
+    public function generateOutputName(array $filters)
+    {
+        $fileName = basename($this->getSourcePath());
+        return sha1(json_encode($filters).filemtime($this->getSourcePath())).'_'.$fileName;
     }
 
     /**
@@ -49,4 +71,10 @@ abstract class AssetBase implements AssetInterface
     {
         return $this->sourcePath;
     }
+
+    public function getTempName()
+    {
+        return sha1($this->getSourcePath()).'_'.basename($this->getSourcePath());
+    }
+
 }

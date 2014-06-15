@@ -23,7 +23,7 @@ $assetLoader->setWebDirectory(__DIR__);
 
 // Lets setup a new sass filter group, and configure it appropriately for our environment.
 $assetLoader->addFilter('sass1',
-                                    new Sass('/usr/bin/sass', ['options' => '--debug-info']))
+                                    new Sass(['options' => '--debug-info']))
 // Lets add some css minification to the same group. Filters are run in sequence
     ->addFilter('sass1',
                 new UglifyCss());
