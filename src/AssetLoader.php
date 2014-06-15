@@ -34,12 +34,15 @@ class AssetLoader
      *@var bool internal flag to determine if we compiled filters yet
      */
     protected $isCompiled = false;
+    protected $filters = [];
+    protected $assets = [];
     /**
      * @param array $options
      */
     public function __construct(array $options = array())
     {
         $this->loadOptions($options);
+        $this->init();
     }
 
     /**
@@ -97,7 +100,8 @@ class AssetLoader
     public function addAsset($filterGroup, AssetInterface $asset)
     {
         $assets = isset($this->assets[$filterGroup]) ? $this->assets[$filterGroup] : [];
-        $assets[] = $filter;
+        $assets[] = $asset;
+
         $this->assets[$filterGroup] = $assets;
         
         return $this;
@@ -138,7 +142,7 @@ class AssetLoader
     {
         $assets = $this->getAssets($filterGroup);
         $filters = $this->getFilters($filterGroup);
-        
+        print_r($filters);print_r($assets);exit;
         // process all the assets 
         foreach($assets as $i => $asset)
         {
@@ -155,6 +159,7 @@ class AssetLoader
         
         return $assets;
     }
+
     public function getAssetUrls($filterGroup)
     {
         $urls = [];
