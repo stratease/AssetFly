@@ -5,6 +5,7 @@ use stratease\AssetFly\Asset\AssetCache;
 use stratease\AssetFly\Util\ConfiguratorTrait;
 use stratease\AssetFly\Filter\FilterInterface;
 use stratease\AssetFly\Filter\UglifyCss;
+
 class AssetLoader
 {
     use ConfiguratorTrait;
@@ -158,9 +159,23 @@ class AssetLoader
         {
             if($filters = $this->getFilters($asset->getFilterGroup())) {
                 // check if cached
-                $assetCache = new AssetCache($asset, $filters);
-                if($assetCache->isCached()) {
-                    $asset = $assetCache->getCache();
+                $dir = $this->getWebDirectory();
+                switch($asset::getFileType())
+                {
+                    case AssetBase::F_CSS:
+                        $dir = $dir."/".$this->getDumpCssDirectory();
+                        break;
+                    case AssetBase::F_JS:
+                        $dir = $dir."/".$this->getDumpJsDirectory();
+                        break;
+                    default:
+                        $dir = null;
+                        throw new \Exception("Invalid asset file type '".$asset::getFileType()."'");
+                }
+                $assetCache = new AssetCache($dir, $asset, $filters);
+                // cached ??
+                if($aCache = $assetCache->getCache()) {
+                    $asset = $aCache;
                 // else not cached, process
                 } else {
                     // if debug (dev mode) only do precompilers
@@ -176,7 +191,6 @@ class AssetLoader
                         {
                             // do our magic!
                             $asset = $filter->processAsset($asset);
-
                         }
                     }                    
                 }
@@ -185,8 +199,6 @@ class AssetLoader
                 $assets[$i] = $asset;
             }
         }
-        
-        // @todo do we concat ?
         
         return $assets;
     }
@@ -204,6 +216,8 @@ class AssetLoader
         // get urls
         foreach($assets as $asset)
         {
+            // write ...
+            // then give url...
             $urls[] = ...
         }
         return $urls;

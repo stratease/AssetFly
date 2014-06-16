@@ -5,7 +5,8 @@ use stratease\AssetFly\Util\ConfiguratorTrait;
 abstract class AssetBase implements AssetInterface
 {
     use ConfiguratorTrait;
-
+    const F_CSS = 'css';
+    const F_JS = 'js';
     /**
      * @var string Absolute path to source file
      */
@@ -44,11 +45,15 @@ abstract class AssetBase implements AssetInterface
     {
         return $this->filterGroup;
     }
-
+    
     public function generateOutputName(array $filters)
     {
         $fileName = basename($this->getSourcePath());
-        return sha1(json_encode($filters).filemtime($this->getSourcePath())).'_'.$fileName;
+        
+        return sha1(json_encode($filters).
+                            filemtime($this->getSourcePath()).
+                            $this->getSourcePath()).
+                    '_'.$fileName;
     }
 
     /**
@@ -72,9 +77,6 @@ abstract class AssetBase implements AssetInterface
         return $this->sourcePath;
     }
 
-    public function getTempName()
-    {
-        return sha1($this->getSourcePath()).'_'.basename($this->getSourcePath());
-    }
+
 
 }

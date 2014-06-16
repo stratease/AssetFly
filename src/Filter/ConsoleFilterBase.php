@@ -25,7 +25,7 @@ abstract class ConsoleFilterBase implements FilterInterface
     {
         return $this->timeout;
     }
-    public function setOptions($options)
+    public function setOptions(array $options)
     {
         $this->options = $options;
         return $this;
