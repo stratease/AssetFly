@@ -2,7 +2,7 @@
 namespace stratease\AssetFly\Twig;
 use stratease\AssetFly\AssetLoader;
 use Phive\Twig\Extensions\Deferred\DeferredExtension;
-use stratease\AssetFly\Asset\TextFile;
+use stratease\AssetFly\Asset\Assets\TextFile;
 class TwigExtension extends \Twig_Extension
 {
     protected $assetLoader;
@@ -24,7 +24,7 @@ class TwigExtension extends \Twig_Extension
     }
     public function addAsset($filterGroup, $webFile, $outputGroup)
     {
-        $asset = new TextFile($this->assetLoader->getWebDirectory().'/'.$webFile);
+        $asset = new TextFile($this->assetLoader, $this->assetLoader->getWebDirectory().'/'.$webFile);
         
         $this->assetLoader->addAsset($filterGroup, $outputGroup, $asset);
     }

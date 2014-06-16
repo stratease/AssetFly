@@ -2,6 +2,7 @@
 namespace stratease\AssetFly\Asset;
 use stratease\AssetFly\Asset\AssetInterface;
 use stratease\AssetFly\Util\ConfiguratorTrait;
+use stratease\AssetFly\AssetLoader;
 abstract class AssetBase implements AssetInterface
 {
     use ConfiguratorTrait;
@@ -11,6 +12,10 @@ abstract class AssetBase implements AssetInterface
     const F_SASS = 'sass';
     const F_SCSS = 'scss';
 
+    /**
+     * @var string Separates the hash id from the file name for generated names
+     */
+    protected $hashNameSeparator = '_';
     /**
      * @var string Absolute path to source file
      */
@@ -32,15 +37,37 @@ abstract class AssetBase implements AssetInterface
      */
     protected $outputName;
     /**
+     * @param AssetLoader $assetLoader The loader
      * @param string $sourceFile Absolute path to source file
      * @param array $options
      */
-    public function __construct($sourceFile, array $options = [])
-    {        
-        $this->loadOptions($options);
+    public function __construct(AssetLoader $assetLoader, $sourceFile, array $options = [])
+    {
+        $this->setAssetLoader($assetLoader);
         $this->setSourcePath($sourceFile);
+        $this->loadOptions($options);
     }
-    
+
+    /**
+     * @param AssetLoader $value
+     * @return $this
+     */
+    public function setAssetLoader($value)
+    {
+        $this->assetLoader = $value;
+
+        return $this;
+    }
+
+    /**
+     * @return
+     */
+    public function getAssetLoader()
+    {
+        return $this->assetLoader;
+    }
+
+
     /**
      * Are we a precompiler like Sass, Less, Coffeescript etc.. ?
      * @return bool
@@ -81,10 +108,12 @@ abstract class AssetBase implements AssetInterface
         $fileName = $fileName.'.'.$ext;
 
         // @todo This isn't the best/optimized way to uniquely ID filters changes. Create a filter ID which changes based on param uses
-        $this->setOutputName(sha1(json_encode($filters).
-                            filemtime($this->getSourcePath()).
-                            $this->getSourcePath()).
-                    '_'.$fileName);
+        $hash = sha1(json_encode($filters).
+            filemtime($this->getSourcePath()).
+            $this->getSourcePath());
+        $path = $this->cleanOutputName($hash.$this->hashNameSeparator.$fileName);
+
+        $this->setOutputName($path);
 
         return $this;
     }
@@ -175,18 +204,70 @@ abstract class AssetBase implements AssetInterface
         return $this->dumpDirectory;
     }
 
+    /**
+     * @return mixed Asset path relative to the web root
+     */
     public function getOutputPath()
     {
         return str_replace("//", "/", $this->getDumpDirectory().'/'.$this->getOutputName());
     }
 
+    /**
+     * Saves current content to path specified
+     * @param $path
+     * @return $this
+     * @throws \Exception
+     */
     public function save($path)
     {
         if(!file_put_contents($path, $this->getContent())) {
             throw new \Exception("Unable to save '".$path."'", E_USER_WARNING);
         }
+        $this->setSourcePath($path);
 
         return $this;
     }
 
+
+    /**
+     * @param $path
+     * @return mixed
+     */
+    public function cleanOutputName($path)
+    {
+        $pathSplit = explode("_", basename($path));
+
+        if(count($pathSplit) > 2)
+        {
+            $a = array_pop($pathSplit);
+            $b = array_pop($pathSplit);
+            $path = dirname($path).'/'.$b.$this->hashNameSeparator.$a;
+        }
+
+        return str_replace("//", "/", $path);
+    }
+    /**
+     * Helper method to generate a new asset cloned from this one, with new content and source paths. Useful to create a chain of assets across change steps
+     * @param $content mixed
+     * @return AssetBase
+     */
+    public function iterateNewAsset($content)
+    {
+        // new asset
+        $compiledAsset = clone $this;
+
+        // build new output name
+        return $compiledAsset->generateOutputName([$this])
+        // update our asset content
+            ->setContent($content)
+        // output
+            ->dumpToOutput();
+    }
+
+    public function dumpToOutput()
+    {
+        $this->save($this->assetLoader->getWebDirectory().'/'.$this->getOutputPath());
+
+        return $this;
+    }
 }

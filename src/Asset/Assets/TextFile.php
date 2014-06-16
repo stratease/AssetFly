@@ -1,5 +1,5 @@
 <?php
-namespace stratease\AssetFly\Asset;
+namespace stratease\AssetFly\Asset\Assets;
 use stratease\AssetFly\Asset\AssetBase;
 class TextFile extends AssetBase
 {

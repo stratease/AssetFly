@@ -5,8 +5,8 @@ use stratease\AssetFly\Asset\AssetInterface;
 use stratease\AssetFly\Asset\AssetCache;
 use stratease\AssetFly\Util\ConfiguratorTrait;
 use stratease\AssetFly\Filter\FilterInterface;
-use stratease\AssetFly\Filter\UglifyCss;
-use stratease\AssetFly\Filter\Sass;
+use stratease\AssetFly\Filter\Filters\UglifyCss;
+use stratease\AssetFly\Filter\Filters\Sass;
 
 class AssetLoader
 {
@@ -53,12 +53,12 @@ class AssetLoader
     {
         // setup predefined filter groups
         // vanilla css
-        $this->addFilter('css', new UglifyCss());
+        $this->addFilter('css', new UglifyCss($this));
         // sass
-        $this->addFilter('sass', new Sass(['options' =>
+        $this->addFilter('sass', new Sass($this, ['options' =>
                                                 ['--debug-info', // these are stripped when not in debug mode
                                                     '--line-numbers']]));
-        $this->addFilter('sass', new UglifyCss());
+        $this->addFilter('sass', new UglifyCss($this));
     }
     /**
      * @param bool $value Flag for caching
@@ -222,7 +222,7 @@ class AssetLoader
                         }
                     }
                     // save file
-                    $asset->save(str_replace("//", "/", $this->getWebDirectory().'/'.$asset->generateOutputName($filters)->getOutputPath()));
+                    $asset->generateOutputName($filters)->dumpToOutput();
                 }
                 // overwrite with processed asset
                 unset($assets[$i]);

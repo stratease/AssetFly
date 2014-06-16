@@ -1,11 +1,10 @@
 <?php
 namespace stratease\AssetFly\Filter;
-use stratease\AssetFly\Filter\FilterInterface;
+use stratease\AssetFly\Filter\FilterBase;
 use stratease\AssetFly\Util\ConfiguratorTrait;
 use Symfony\Component\Process\ProcessBuilder;
-abstract class ConsoleFilterBase implements FilterInterface
+abstract class ConsoleFilterBase extends FilterBase
 {
-    use ConfiguratorTrait;
     /**
      * @var string The cli args
      */
@@ -30,11 +29,7 @@ abstract class ConsoleFilterBase implements FilterInterface
         $this->options = $options;
         return $this;
     }
-   
-    public function __construct(array $options = [])
-    {
-        $this->loadOptions($options);
-    }
+
      /**
      * @param ProcessBuilder $value The symfony process builder that manages this filer.
      * @return $this

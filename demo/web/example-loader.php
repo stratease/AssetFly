@@ -1,7 +1,7 @@
 <?php
 use stratease\AssetFly\AssetLoader;
-use stratease\AssetFly\Filter\Sass;
-use stratease\AssetFly\Filter\UglifyCss;
+use stratease\AssetFly\Filter\Filters\Sass;
+use stratease\AssetFly\Filter\Filters\UglifyCss;
 use stratease\AssetFly\Twig\TwigExtension;
 /**
  * Generate composers autoload file, and point your web root to this demo/web/ folder.
@@ -23,10 +23,10 @@ $assetLoader->setWebDirectory(__DIR__);
 
 // Lets setup a new sass filter group, and configure it appropriately for our environment.
 $assetLoader->addFilter('sass_new',
-                                    new Sass(['options' => ['--debug-info']]))
+                                    new Sass($assetLoader, ['options' => ['--debug-info']]))
 // Lets add some css minification to the same group. Filters are run in sequence
     ->addFilter('sass_new',
-                new UglifyCss());
+                new UglifyCss($assetLoader));
 
 // setup our twig 
 Twig_Autoloader::register();

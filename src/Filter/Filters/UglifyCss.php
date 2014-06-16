@@ -1,34 +1,28 @@
 <?php
-namespace stratease\AssetFly\Filter;
-use stratease\AssetFly\Asset\AssetBase;
+namespace stratease\AssetFly\Filter\Filters;
 use stratease\AssetFly\Asset\AssetInterface;
 use stratease\AssetFly\Filter\ConsoleFilterBase;
-use Symfony\Component\Process\ProcessBuilder;
 
 
-class Sass extends ConsoleFilterBase
+
+class UglifyCss extends ConsoleFilterBase
 {
-    protected $shellCmd = 'sass';
-
-
-
+	protected $shellCmd = 'uglifycss';
+	
 
     public static function isPrecompiler()
     {
-        return true;
+        return false;
     }
-
     /**
      * @param AssetInterface $asset
-     * @return AssetInterface
      * @throws \Exception
+     * @return AssetInterface The new asset object, depends on filter but this will typically be cloned and saved as new file
      */
     public function processAsset(AssetInterface $asset)
     {
+    	//Usage: uglifycss [options] file1.css [file2.css [...]] > output
         $pb = $this->getProcessBuilder();
-        if($asset->getFileType() === AssetBase::F_SCSS) {
-            $pb->add('--scss');
-        }
 
         // file input
         $pb->add($asset->getSourcePath());
@@ -40,10 +34,8 @@ class Sass extends ConsoleFilterBase
             throw new \Exception(__METHOD__." failed to filter '".$asset->getSourcePath(). "' - ".substr($proc->getOutput(), 0, 100), E_USER_WARNING);
         }
 
-        // update our asset w/ compiled css
-        $asset->setContent($proc->getOutput());
 
-        return $asset;
+        return $asset->iterateNewAsset($proc->getOutput());
     }
 
 

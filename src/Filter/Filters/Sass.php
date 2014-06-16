@@ -1,28 +1,34 @@
 <?php
-namespace stratease\AssetFly\Filter;
+namespace stratease\AssetFly\Filter\Filters;
+use stratease\AssetFly\Asset\AssetBase;
 use stratease\AssetFly\Asset\AssetInterface;
 use stratease\AssetFly\Filter\ConsoleFilterBase;
 
 
 
-class UglifyCss extends ConsoleFilterBase
+class Sass extends ConsoleFilterBase
 {
-	protected $shellCmd = 'uglifycss';
-	
+    protected $shellCmd = 'sass';
+
+
+
 
     public static function isPrecompiler()
     {
-        return false;
+        return true;
     }
+
     /**
      * @param AssetInterface $asset
+     * @return AssetInterface
      * @throws \Exception
-     * @return AssetInterface The updated asset object
      */
     public function processAsset(AssetInterface $asset)
     {
-    	//Usage: uglifycss [options] file1.css [file2.css [...]] > output
         $pb = $this->getProcessBuilder();
+        if($asset->getFileType() === AssetBase::F_SCSS) {
+            $pb->add('--scss');
+        }
 
         // file input
         $pb->add($asset->getSourcePath());
@@ -33,10 +39,8 @@ class UglifyCss extends ConsoleFilterBase
         if ($code !== 0) {
             throw new \Exception(__METHOD__." failed to filter '".$asset->getSourcePath(). "' - ".substr($proc->getOutput(), 0, 100), E_USER_WARNING);
         }
-        // update our asset w/ minified css
-        $asset->setContent($proc->getOutput());
 
-        return $asset;
+        return $asset->iterateNewAsset($proc->getOutput());
     }
 
 
