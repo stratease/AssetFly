@@ -22,10 +22,10 @@ $assetLoader->setWebDirectory(__DIR__);
 // We have a default filter for a few libs under predefined filter groups "css", "js", and "sass".
 
 // Lets setup a new sass filter group, and configure it appropriately for our environment.
-$assetLoader->addFilter('sass1',
-                                    new Sass(['options' => '--debug-info']))
+$assetLoader->addFilter('sass_new',
+                                    new Sass(['options' => ['--debug-info']]))
 // Lets add some css minification to the same group. Filters are run in sequence
-    ->addFilter('sass1',
+    ->addFilter('sass_new',
                 new UglifyCss());
 
 // setup our twig 

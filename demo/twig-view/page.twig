@@ -6,7 +6,7 @@
         {{ assetfly_add_css('/assets/page.css', 'stylesheets') }}
         
         {# Add a sass (scss) file to the stylesheets asset output group. #}
-        {{ assetfly_add_sass1('/assets/page.scss', 'stylesheets') }}
+        {{ assetfly_add_sass('/assets/page.scss', 'stylesheets') }}
         
         {# We use the deferred flag to wait for other included templates' assets before compiling this block, otherwise twig's default behavior is to not wait before compiling that block #}
         {% block stylesheets deferred %}

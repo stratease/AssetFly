@@ -54,9 +54,11 @@ abstract class ConsoleFilterBase implements FilterInterface
         // default to options passed if we weren't explicitly defined..
         if(!$this->processBuilder) {
             $this->setProcessBuilder(new ProcessBuilder(array_merge([$this->getShellCmd()], $this->getOptions())));
+
+            // mark our timeout
+            $this->processBuilder->setTimeout($this->getTimeout());
         }
-        // mark our timeout
-        $this->processBuilder->setTimeout($this->getTimeout());
+
         return $this->processBuilder;
     }
     public function setShellCmd($cmd)
@@ -67,15 +69,5 @@ abstract class ConsoleFilterBase implements FilterInterface
     public function getShellCmd()
     {
         return $this->shellCmd;
-    }
-    public function setOptions($args)
-    {
-        // stringify it...
-        if(is_array($args)) {
-            $args = implode(" ", $args);
-        }
-        $this->options = $args;
-        
-        return $this;
     }
 }

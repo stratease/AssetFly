@@ -4,7 +4,11 @@ use stratease\AssetFly\Asset\AssetBase;
 class TextFile extends AssetBase
 {
 	protected $content;
-   
+
+    /**
+     * @param $content
+     * @return $this
+     */
     public function setContent($content)
     {
     	$this->content = $content;
@@ -13,6 +17,9 @@ class TextFile extends AssetBase
     }
 
 
+    /**
+     * @return string
+     */
     public function getContent()
     {
     	if(!$this->content) {
@@ -23,4 +30,6 @@ class TextFile extends AssetBase
 	    	return $this->content;
 	    }
     }
+
+
 }

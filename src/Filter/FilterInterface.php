@@ -11,4 +11,5 @@ namespace stratease\AssetFly\Filter;
 
 interface FilterInterface {
 
+    public static function isPrecompiler();
 } 

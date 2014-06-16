@@ -7,6 +7,10 @@ abstract class AssetBase implements AssetInterface
     use ConfiguratorTrait;
     const F_CSS = 'css';
     const F_JS = 'js';
+    const F_LESS = 'less';
+    const F_SASS = 'sass';
+    const F_SCSS = 'scss';
+
     /**
      * @var string Absolute path to source file
      */
@@ -15,6 +19,18 @@ abstract class AssetBase implements AssetInterface
      * @var string The filter group this asset is bound to
      */
     protected $filterGroup;
+    /**
+     * @var string
+     */
+    protected $fileType;
+    /**
+     * @var string
+     */
+    protected $dumpDirectory;
+    /**
+     * @var string
+     */
+    protected $outputName;
     /**
      * @param string $sourceFile Absolute path to source file
      * @param array $options
@@ -48,13 +64,50 @@ abstract class AssetBase implements AssetInterface
     
     public function generateOutputName(array $filters)
     {
-        $fileName = basename($this->getSourcePath());
-        
-        return sha1(json_encode($filters).
+        // create file name
+        $fileName = pathinfo($this->getSourcePath(), PATHINFO_FILENAME);
+        // extension...
+        switch($this->getFileType())
+        {
+            case self::F_SCSS:
+            case self::F_LESS:
+            case self::F_SASS:
+                $ext = 'css';
+                break;
+            default:
+                $ext = pathinfo($this->getSourcePath(), PATHINFO_EXTENSION);
+                break;
+        }
+        $fileName = $fileName.'.'.$ext;
+
+        // @todo This isn't the best/optimized way to uniquely ID filters changes. Create a filter ID which changes based on param uses
+        $this->setOutputName(sha1(json_encode($filters).
                             filemtime($this->getSourcePath()).
                             $this->getSourcePath()).
-                    '_'.$fileName;
+                    '_'.$fileName);
+
+        return $this;
     }
+
+    /**
+     * @param string $value The file name to be output
+     * @return $this
+     */
+    public function setOutputName($value)
+    {
+        $this->outputName = $value;
+
+        return $this;
+    }
+
+    /**
+     * @return string The file name to be output
+     */
+    public function getOutputName()
+    {
+        return $this->outputName;
+    }
+
 
     /**
      * @param $sourceFile
@@ -77,6 +130,63 @@ abstract class AssetBase implements AssetInterface
         return $this->sourcePath;
     }
 
+    /**
+     * @param mixed $value Constant definition for the type of file being processed
+     * @return $this
+     */
+    public function setFileType($value)
+    {
+        $this->fileType = $value;
 
+        return $this;
+    }
+
+    /**
+     * @return mixed Constant definition for the type of file being processed
+     */
+    public function getFileType()
+    {
+        if(!$this->fileType) {
+
+            // try and guess
+            return pathinfo($this->getSourcePath(), PATHINFO_EXTENSION);
+        } else {
+
+            return $this->fileType;
+        }
+    }
+
+    /**
+     * @param string $value Web path this file is to be output
+     * @return $this
+     */
+    public function setDumpDirectory($value)
+    {
+        $this->dumpDirectory = $value;
+
+        return $this;
+    }
+
+    /**
+     * @return string Web path this file is to be output
+     */
+    public function getDumpDirectory()
+    {
+        return $this->dumpDirectory;
+    }
+
+    public function getOutputPath()
+    {
+        return str_replace("//", "/", $this->getDumpDirectory().'/'.$this->getOutputName());
+    }
+
+    public function save($path)
+    {
+        if(!file_put_contents($path, $this->getContent())) {
+            throw new \Exception("Unable to save '".$path."'", E_USER_WARNING);
+        }
+
+        return $this;
+    }
 
 }

@@ -2,7 +2,7 @@
 namespace stratease\AssetFly\Asset;
 use stratease\AssetFly\Util\ConfiguratorTrait;
 use stratease\AssetFly\Asset\AssetInterface;
-abstract class AssetCache
+class AssetCache
 {
     use ConfiguratorTrait;
 
@@ -44,12 +44,13 @@ abstract class AssetCache
     public function getCache()
     {
         // do we have a file?    
-        $name = $this->asset->generateOutputName($this->filters);
+        $name = $this->asset->generateOutputName($this->filters)->getOutputName();
         
         if($path = realpath($this->cacheDirectory.'/'.$name)) {
             $asset = clone $this->asset;
+            // @todo better mechanism to hook into content?
             $asset->setContent(
-                        file_get_contents($path);
+                        file_get_contents($path));
             
             return $asset;
         }

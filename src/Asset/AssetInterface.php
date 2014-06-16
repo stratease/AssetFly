@@ -13,9 +13,11 @@ interface AssetInterface
      */
     public static function isPrecompiler();
     
+
+
+
     /**
-     * Retrieve the raw data of this asset
-     * @return mixed
+     * @return mixed Define which file type we are
      */
-    public function dump();
+    public function getFileType();
 }

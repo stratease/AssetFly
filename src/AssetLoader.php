@@ -1,10 +1,12 @@
 <?php
 namespace stratease\AssetFly;
+use stratease\AssetFly\Asset\AssetBase;
 use stratease\AssetFly\Asset\AssetInterface;
 use stratease\AssetFly\Asset\AssetCache;
 use stratease\AssetFly\Util\ConfiguratorTrait;
 use stratease\AssetFly\Filter\FilterInterface;
 use stratease\AssetFly\Filter\UglifyCss;
+use stratease\AssetFly\Filter\Sass;
 
 class AssetLoader
 {
@@ -50,7 +52,13 @@ class AssetLoader
     public function init()
     {
         // setup predefined filter groups
+        // vanilla css
         $this->addFilter('css', new UglifyCss());
+        // sass
+        $this->addFilter('sass', new Sass(['options' =>
+                                                ['--debug-info', // these are stripped when not in debug mode
+                                                    '--line-numbers']]));
+        $this->addFilter('sass', new UglifyCss());
     }
     /**
      * @param bool $value Flag for caching
@@ -108,9 +116,33 @@ class AssetLoader
         return $this;
     }
 
+    /**
+     * @todo File type details of this method should be contained within an 'asset/filter collection', as it is more abstracted from the specific file handling (asset job)
+     * @param $filterGroup
+     * @param $outputGroup
+     * @param AssetInterface $asset
+     * @return $this
+     * @throws \Exception
+     */
     public function addAsset($filterGroup, $outputGroup, AssetInterface $asset)
     {
         $asset->setFilterGroup($filterGroup);
+
+        switch($asset->getFileType())
+        {
+            case AssetBase::F_LESS:
+            case AssetBase::F_SASS:
+            case AssetBase::F_SCSS:
+            case AssetBase::F_CSS:
+                $asset->setDumpDirectory(str_replace("//", "/", "/".$this->getDumpCssDirectory()));
+                break;
+            case AssetBase::F_JS:
+                $asset->setDumpDirectory(str_replace("//", "/", "/".$this->getDumpJsDirectory()));
+                break;
+            default:
+                throw new \Exception("Invalid asset file type '".$asset->getFileType()."'");
+        }
+
         $assets = isset($this->assets[$outputGroup]) ? $this->assets[$outputGroup] : [];
         $assets[] = $asset;
 
@@ -150,6 +182,13 @@ class AssetLoader
             return isset($this->assets[$outputGroup]) ? $this->assets[$outputGroup] : [];
         }
     }
+
+    /**
+     * @param $outputGroup
+     * @return array
+
+     * @throws \Exception
+     */
     public function compile($outputGroup)
     {
         $assets = $this->getAssets($outputGroup);
@@ -159,22 +198,11 @@ class AssetLoader
         {
             if($filters = $this->getFilters($asset->getFilterGroup())) {
                 // check if cached
-                $dir = $this->getWebDirectory();
-                switch($asset::getFileType())
-                {
-                    case AssetBase::F_CSS:
-                        $dir = $dir."/".$this->getDumpCssDirectory();
-                        break;
-                    case AssetBase::F_JS:
-                        $dir = $dir."/".$this->getDumpJsDirectory();
-                        break;
-                    default:
-                        $dir = null;
-                        throw new \Exception("Invalid asset file type '".$asset::getFileType()."'");
-                }
+                $dir = realpath($this->getWebDirectory().'/'.$asset->getDumpDirectory());
                 $assetCache = new AssetCache($dir, $asset, $filters);
                 // cached ??
-                if($aCache = $assetCache->getCache()) {
+                if($this->getCache() === true
+                    && ($aCache = $assetCache->getCache())) {
                     $asset = $aCache;
                 // else not cached, process
                 } else {
@@ -192,7 +220,9 @@ class AssetLoader
                             // do our magic!
                             $asset = $filter->processAsset($asset);
                         }
-                    }                    
+                    }
+                    // save file
+                    $asset->save(str_replace("//", "/", $this->getWebDirectory().'/'.$asset->generateOutputName($filters)->getOutputPath()));
                 }
                 // overwrite with processed asset
                 unset($assets[$i]);
@@ -203,6 +233,8 @@ class AssetLoader
         return $assets;
     }
 
+
+
     public function getAssetUrls($outputGroup)
     {
         $urls = [];
@@ -211,14 +243,15 @@ class AssetLoader
         // if debug output each asset separately
         // else concat 'em
         if(!$this->getDebug()) {
+            // @todo This should be moved to a postprocessing hook for concat, as this depends on the file type. Asset collection responsibility
             $assets = AssetBase::concat($assets);
         }
+
         // get urls
         foreach($assets as $asset)
         {
-            // write ...
             // then give url...
-            $urls[] = ...
+            $urls[] = $asset->getOutputPath();
         }
         return $urls;
     }
