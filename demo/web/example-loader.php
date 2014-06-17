@@ -8,12 +8,13 @@ use stratease\AssetFly\Twig\TwigExtension;
  */
 require_once("../../vendor/autoload.php");
 
-// Instantiate loader, we are defining the css destination directory for the compiled files. It expects a path relative to web root
+// Instantiate loader, we are defining the destination directories for the compiled files. It expects a path relative to web root
 $assetLoader = new AssetLoader(['dumpCssDirectory' => '/css/',
-                                                    'cache' => false]);
+                                'dumpJsDirectory' => 'js/',
+                                'cache' => false]);
 
 // Debug mode affects the output. Our compiler is smart enough to always run precompiles even in debug mode and leave the raw css/js use original files for troubleshooting purposes.
-$assetLoader->setDebug(true); // try changing this to false and watch the network 
+$assetLoader->setDebug(true); // try toggling this to false and watch the network requests change
 
 // our document root
 $assetLoader->setWebDirectory(__DIR__);
@@ -22,8 +23,9 @@ $assetLoader->setWebDirectory(__DIR__);
 // We have a default filter for a few libs under predefined filter groups "css", "js", and "sass".
 
 // Lets setup a new sass filter group, and configure it appropriately for our environment.
-$assetLoader->addFilter('sass_new',
-                                    new Sass($assetLoader, ['options' => ['--debug-info']]))
+$assetLoader
+    ->addFilter('sass_new',
+                new Sass($assetLoader, ['options' => ['--debug-info']]))
 // Lets add some css minification to the same group. Filters are run in sequence
     ->addFilter('sass_new',
                 new UglifyCss($assetLoader));

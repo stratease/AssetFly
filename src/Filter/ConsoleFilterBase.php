@@ -8,7 +8,7 @@ abstract class ConsoleFilterBase extends FilterBase
     /**
      * @var string The cli args
      */
-    protected $options; 
+    protected $options = [];
     protected $timeout = 30;
     protected $processBuilder;
     public function getOptions()
@@ -54,6 +54,12 @@ abstract class ConsoleFilterBase extends FilterBase
             $this->processBuilder->setTimeout($this->getTimeout());
         }
 
+        // if debug add special stuff..
+        if($this->assetLoader->getDebug()) {
+            if($callable = $this->getIfDebugCallable()) {
+                call_user_func($callable);
+            }
+        }
         return $this->processBuilder;
     }
     public function setShellCmd($cmd)

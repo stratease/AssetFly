@@ -44,10 +44,27 @@ abstract class AssetBase implements AssetInterface
     public function __construct(AssetLoader $assetLoader, $sourceFile, array $options = [])
     {
         $this->setAssetLoader($assetLoader);
+
         $this->setSourcePath($sourceFile);
         $this->loadOptions($options);
+        $this->init();
     }
 
+    public function init()
+    {
+        switch($this->getFileType())
+        {
+            case AssetBase::F_LESS:
+            case AssetBase::F_SASS:
+            case AssetBase::F_SCSS:
+            case AssetBase::F_CSS:
+                $this->setDumpDirectory($this->assetLoader->getDumpCssDirectory());
+                break;
+            case AssetBase::F_JS:
+                $this->setDumpDirectory($this->assetLoader->getDumpJsDirectory());
+                break;
+        }
+    }
     /**
      * @param AssetLoader $value
      * @return $this
@@ -134,7 +151,13 @@ abstract class AssetBase implements AssetInterface
      */
     public function getOutputName()
     {
-        return $this->outputName;
+        if($this->outputName) {
+
+            return $this->outputName;
+        } else {
+
+            return basename($this->sourcePath);
+        }
     }
 
 
@@ -186,6 +209,7 @@ abstract class AssetBase implements AssetInterface
     }
 
     /**
+     * @todo This is too static, it's value needs to be coupled with the AssetLoader dump info
      * @param string $value Web path this file is to be output
      * @return $this
      */
@@ -197,6 +221,7 @@ abstract class AssetBase implements AssetInterface
     }
 
     /**
+     * @todo This is too static, it's value needs to be coupled with the AssetLoader dump info
      * @return string Web path this file is to be output
      */
     public function getDumpDirectory()

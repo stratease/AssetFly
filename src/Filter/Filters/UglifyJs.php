@@ -1,34 +1,28 @@
 <?php
 namespace stratease\AssetFly\Filter\Filters;
-use stratease\AssetFly\Asset\AssetBase;
 use stratease\AssetFly\Asset\AssetInterface;
 use stratease\AssetFly\Filter\ConsoleFilterBase;
 
 
 
-class Sass extends ConsoleFilterBase
+class UglifyJs extends ConsoleFilterBase
 {
-    protected $shellCmd = 'sass';
-
-
-
+	protected $shellCmd = 'uglifyjs';
+	
 
     public static function isPrecompiler()
     {
-        return true;
+        return false;
     }
-
     /**
      * @param AssetInterface $asset
-     * @return AssetInterface
      * @throws \Exception
+     * @return AssetInterface The new asset object, depends on filter but this will typically be cloned and saved as new file
      */
     public function processAsset(AssetInterface $asset)
     {
+
         $pb = $this->getProcessBuilder();
-        if($asset->getFileType() === AssetBase::F_SCSS) {
-            $pb->add('--scss');
-        }
 
         // file input
         $pb->add($asset->getSourcePath());
@@ -40,14 +34,10 @@ class Sass extends ConsoleFilterBase
             throw new \Exception(__METHOD__." failed to filter '".$asset->getSourcePath(). "' - ".substr($proc->getOutput(), 0, 100), E_USER_WARNING);
         }
 
+
         return $asset->iterateNewAsset($proc->getOutput());
     }
 
-    public function addDebugFlags()
-    {
-        $this->processBuilder->add('--debug-info');
-        $this->processBuilder->add('--line-numbers');
-    }
 
 
 

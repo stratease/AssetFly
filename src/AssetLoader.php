@@ -3,10 +3,12 @@ namespace stratease\AssetFly;
 use stratease\AssetFly\Asset\AssetBase;
 use stratease\AssetFly\Asset\AssetInterface;
 use stratease\AssetFly\Asset\AssetCache;
+use stratease\AssetFly\Asset\Assets\TextFile;
 use stratease\AssetFly\Util\ConfiguratorTrait;
 use stratease\AssetFly\Filter\FilterInterface;
 use stratease\AssetFly\Filter\Filters\UglifyCss;
 use stratease\AssetFly\Filter\Filters\Sass;
+use stratease\AssetFly\Filter\Filters\UglifyJs;
 
 class AssetLoader
 {
@@ -54,11 +56,14 @@ class AssetLoader
         // setup predefined filter groups
         // vanilla css
         $this->addFilter('css', new UglifyCss($this));
+
         // sass
-        $this->addFilter('sass', new Sass($this, ['options' =>
-                                                ['--debug-info', // these are stripped when not in debug mode
-                                                    '--line-numbers']]));
+        $sass = new Sass($this);
+        $sass->setIfDebugCallable([$sass, 'addDebugFlags']);
+        $this->addFilter('sass', $sass);
         $this->addFilter('sass', new UglifyCss($this));
+        // js
+        $this->addFilter('js', new UglifyJs($this));
     }
     /**
      * @param bool $value Flag for caching
@@ -101,6 +106,7 @@ class AssetLoader
     /**
      * @param $filterGroup
      * @param FilterInterface $filter
+     * @throws \Exception
      * @return $this
      */
     public function addFilter($filterGroup, FilterInterface $filter)
@@ -127,21 +133,6 @@ class AssetLoader
     public function addAsset($filterGroup, $outputGroup, AssetInterface $asset)
     {
         $asset->setFilterGroup($filterGroup);
-
-        switch($asset->getFileType())
-        {
-            case AssetBase::F_LESS:
-            case AssetBase::F_SASS:
-            case AssetBase::F_SCSS:
-            case AssetBase::F_CSS:
-                $asset->setDumpDirectory(str_replace("//", "/", "/".$this->getDumpCssDirectory()));
-                break;
-            case AssetBase::F_JS:
-                $asset->setDumpDirectory(str_replace("//", "/", "/".$this->getDumpJsDirectory()));
-                break;
-            default:
-                throw new \Exception("Invalid asset file type '".$asset->getFileType()."'");
-        }
 
         $assets = isset($this->assets[$outputGroup]) ? $this->assets[$outputGroup] : [];
         $assets[] = $asset;
@@ -186,7 +177,6 @@ class AssetLoader
     /**
      * @param $outputGroup
      * @return array
-
      * @throws \Exception
      */
     public function compile($outputGroup)
@@ -233,7 +223,52 @@ class AssetLoader
         return $assets;
     }
 
+    /**
+     * @todo temporary ... function doesn't belong here!!
+     * @param array $assets
+     * @return null|TextFile
+     */
+    public function concat(array $assets)
+    {
+        if(isset($assets[0])) {
+            // our concat'd file name?
+            switch($assets[0]->getFileType())
+            {
+                case AssetBase::F_LESS:
+                case AssetBase::F_SASS:
+                case AssetBase::F_SCSS:
+                case AssetBase::F_CSS:
+                    $ext = 'css';
+                    break;
+                case AssetBase::F_JS:
+                    $ext = 'js';
+                    break;
+                default:
+                    return null;
+            }
+            // our concat file path
+            $filePath = $this->getWebDirectory().'/'.
+                    $assets[0]->getDumpDirectory().'/'.
+                    sha1(json_encode($assets)).'_cat.'.$ext;
 
+            // check if file exists...
+            if($path = realpath($filePath)) {
+                $asset = new TextFile($this, $path);
+            }
+            else {
+                // if it doesn't generate...
+                foreach($assets as $ass) {
+                    file_put_contents($filePath, $ass->getContent()."\n", FILE_APPEND);
+                }
+                $asset = new TextFile($this, $filePath);
+            }
+
+            // return our new asset
+            return $asset;
+        }
+
+
+    }
 
     public function getAssetUrls($outputGroup)
     {
@@ -243,8 +278,11 @@ class AssetLoader
         // if debug output each asset separately
         // else concat 'em
         if(!$this->getDebug()) {
-            // @todo This should be moved to a postprocessing hook for concat, as this depends on the file type. Asset collection responsibility
-            $assets = AssetBase::concat($assets);
+            // @todo This should be encapsulated into a post processing hook, as this depends on the file type, more of an asset collection responsibility.
+            if($asset = $this->concat($assets)) {
+                $assets = [$asset];
+            }
+
         }
 
         // get urls
