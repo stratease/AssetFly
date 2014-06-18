@@ -20,8 +20,8 @@ class AssetCache
     {
         $this->cacheDirectory = $dir;
         if(is_dir($this->cacheDirectory) === false) {
-            if(mkdir($this->cacheDirectory, 0755, true) === false) {
-                throw new \Exception("Unable to create cache directory '".$this->cacheDirectory."'");
+            if(@mkdir($this->cacheDirectory, 0755, true) === false) {
+                throw new \Exception("Unable to create cache directory '".$this->cacheDirectory."', permission denied!");
             }
         }
         

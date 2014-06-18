@@ -1,6 +1,6 @@
-demo/web/.sass_cache/
-demo/web/css
-demo/web/js
+demo/web/.sass-cache
+demo/web/css/*
+demo/web/js/*
 assetfly.komodoproject
 .idea
 # Bootstrap

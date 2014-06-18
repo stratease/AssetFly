@@ -188,7 +188,7 @@ class AssetLoader
         {
             if($filters = $this->getFilters($asset->getFilterGroup())) {
                 // check if cached
-                $dir = realpath($this->getWebDirectory().'/'.$asset->getDumpDirectory());
+                $dir = str_replace("//", "/", $this->getWebDirectory().'/'.$asset->getDumpDirectory());
                 $assetCache = new AssetCache($dir, $asset, $filters);
                 // cached ??
                 if($this->getCache() === true
