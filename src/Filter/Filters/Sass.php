@@ -37,7 +37,7 @@ class Sass extends ConsoleFilterBase
 
         // process err?
         if ($code !== 0) {
-            throw new \Exception(__METHOD__." failed to filter '".$asset->getSourcePath(). "' - ".substr($proc->getOutput(), 0, 100), E_USER_WARNING);
+            throw new \Exception(__METHOD__." - ".$proc->getErrorOutput().". Failed to filter '".$asset->getSourcePath()."\n".$proc->getCommandLine(), E_USER_WARNING);
         }
 
         return $asset->iterateNewAsset($proc->getOutput());

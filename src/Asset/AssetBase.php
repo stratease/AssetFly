@@ -247,8 +247,7 @@ abstract class AssetBase implements AssetInterface
     {
         if(!file_put_contents($path, $this->getContent())) {
             throw new \Exception("Unable to save '".$path."'", E_USER_WARNING);
-        }
-        $this->setSourcePath($path);
+        }        
 
         return $this;
     }
