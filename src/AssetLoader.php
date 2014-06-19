@@ -9,6 +9,7 @@ use stratease\AssetFly\Filter\FilterInterface;
 use stratease\AssetFly\Filter\Filters\UglifyCss;
 use stratease\AssetFly\Filter\Filters\Sass;
 use stratease\AssetFly\Filter\Filters\UglifyJs;
+use stratease\AssetFly\Filter\Filters\CssRelativeRewrite;
 
 class AssetLoader
 {
@@ -55,9 +56,11 @@ class AssetLoader
     {
         // setup predefined filter groups
         // vanilla css
+		$this->addFilter('css', new CssRelativeRewrite($this)); // first fix relative urls
         $this->addFilter('css', new UglifyCss($this));
 
         // sass
+		$this->addFilter('sass', new CssRelativeRewrite($this)); // first fix relative urls
         $sass = new Sass($this);
         $sass->setIfDebugCallable([$sass, 'addDebugFlags']);
         $this->addFilter('sass', $sass);
@@ -100,6 +103,10 @@ class AssetLoader
      */
     public function getWebDirectory()
     {
+		if(!$this->webDirectory
+		   || !realpath($this->webDirectory)) {			
+			throw new \Exception("Unable to locate the web directory '".$this->webDirectory."'. You must define a valid web directory.");
+		}
         return $this->webDirectory;
     }
 
