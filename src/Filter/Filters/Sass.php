@@ -3,7 +3,7 @@ namespace stratease\AssetFly\Filter\Filters;
 use stratease\AssetFly\Asset\AssetBase;
 use stratease\AssetFly\Asset\AssetInterface;
 use stratease\AssetFly\Filter\ConsoleFilterBase;
-
+use Symfony\Component\Process\ProcessBuilder;
 
 
 class Sass extends ConsoleFilterBase
@@ -40,15 +40,12 @@ class Sass extends ConsoleFilterBase
             throw new \Exception(__METHOD__." - ".$proc->getErrorOutput().". Failed to filter '".$asset->getSourcePath()."\n".$proc->getCommandLine(), E_USER_WARNING);
         }
 
-        return $asset->iterateNewAsset($proc->getOutput());
+        return $asset->setContent($proc->getOutput());
     }
 
-    public function addDebugFlags()
+    public function addDebugFlags(ProcessBuilder $pb)
     {
-        $this->processBuilder->add('--debug-info');
-        $this->processBuilder->add('--line-numbers');
+        $pb->add('--debug-info');
+        $pb->add('--line-numbers');
     }
-
-
-
 }

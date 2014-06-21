@@ -39,7 +39,9 @@ class CssRelativeRewrite extends FilterBase
 			$content = preg_replace_callback($regex,
 				function($matches) use ($sourceDir) {
 					// if it's relative, just prepend with our source dir
-					if(substr($matches['url'], 0, 1) != '/') {
+					if(substr($matches['url'], 0, 1) != '/'
+						&& substr($matches['url'], 0, 5) != 'http:') {
+
 						return str_replace($matches['url'], $sourceDir.'/'.$matches['url'], $matches[0]);
 					}
 					
@@ -47,6 +49,6 @@ class CssRelativeRewrite extends FilterBase
 				}, $content);
 		}
 		
-        return $asset->iterateNewAsset($content);
+        return $asset->setContent($content);
     }
 }

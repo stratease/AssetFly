@@ -30,37 +30,25 @@ abstract class ConsoleFilterBase extends FilterBase
         return $this;
     }
 
-     /**
-     * @param ProcessBuilder $value The symfony process builder that manages this filer.
-     * @return $this
-     */
-    public function setProcessBuilder($value)
-    {
-        $this->processBuilder = $value;
-
-        return $this;
-    }
 
     /**
      * @return ProcessBuilder The symfony process builder that manages this filer.
      */
     public function getProcessBuilder()
     {
-        // default to options passed if we weren't explicitly defined..
-        if(!$this->processBuilder) {
-            $this->setProcessBuilder(new ProcessBuilder(array_merge([$this->getShellCmd()], $this->getOptions())));
+        $pb = new ProcessBuilder(array_merge([$this->getShellCmd()], $this->getOptions()));
 
-            // mark our timeout
-            $this->processBuilder->setTimeout($this->getTimeout());
-        }
+        // mark our timeout
+        $pb->setTimeout($this->getTimeout());
 
         // if debug add special stuff..
         if($this->assetLoader->getDebug()) {
             if($callable = $this->getIfDebugCallable()) {
-                call_user_func($callable);
+                call_user_func($callable, $pb);
             }
         }
-        return $this->processBuilder;
+
+        return $pb;
     }
     public function setShellCmd($cmd)
     {

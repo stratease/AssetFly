@@ -11,5 +11,9 @@ namespace stratease\AssetFly\Filter;
 
 interface FilterInterface {
 
+     /**
+     * Are we a precompiler like Sass, Less, Coffeescript etc.. ?
+     * @return bool
+     */
     public static function isPrecompiler();
 } 
