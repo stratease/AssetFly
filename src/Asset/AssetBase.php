@@ -85,15 +85,6 @@ abstract class AssetBase implements AssetInterface
     }
 
 
-    /**
-     * Are we a precompiler like Sass, Less, Coffeescript etc.. ?
-     * @return bool
-     */
-    public static function isPrecompiler()
-    {
-        return false;
-    }
-
     public function setFilterGroup($group)
     {
         $this->filterGroup = $group;
@@ -151,13 +142,7 @@ abstract class AssetBase implements AssetInterface
      */
     public function getOutputName()
     {
-        if($this->outputName) {
-
-            return $this->outputName;
-        } else {
-
-            return basename($this->sourcePath);
-        }
+        return $this->outputName;
     }
 
 
@@ -234,7 +219,12 @@ abstract class AssetBase implements AssetInterface
      */
     public function getOutputPath()
     {
-        return str_replace("//", "/", $this->getDumpDirectory().'/'.$this->getOutputName());
+        if(!$this->getDumpDirectory()) {
+            throw new \Exception("Must define a valid dump directory to retrieve an output path");
+        } else {
+         
+            return str_replace("//", "/", $this->getDumpDirectory().'/'.$this->getOutputName());
+        }
     }
 
     /**
@@ -270,23 +260,7 @@ abstract class AssetBase implements AssetInterface
 
         return str_replace("//", "/", $path);
     }
-    /**
-     * Helper method to generate a new asset cloned from this one, with new content and source paths. Useful to create a chain of assets across change steps
-     * @param $content mixed
-     * @return AssetBase
-     */
-    public function iterateNewAsset($content)
-    {
-        // new asset
-        $compiledAsset = clone $this;
 
-        // build new output name
-        return $compiledAsset->generateOutputName([$this])
-        // update our asset content
-            ->setContent($content)
-        // output
-            ->dumpToOutput();
-    }
 
     public function dumpToOutput()
     {

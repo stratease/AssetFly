@@ -9,11 +9,7 @@ interface AssetInterface
      * @param array $options
      */
     public function __construct(AssetLoader $assetLoader, $sourceFile, array $options = []);
-    /**
-     * Are we a precompiler like Sass, Less, Coffeescript etc.. ?
-     * @return bool
-     */
-    public static function isPrecompiler();
+
     
 
 
