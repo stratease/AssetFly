@@ -60,10 +60,11 @@ class AssetLoader
         $this->addFilter('css', new UglifyCss($this));
 
         // sass
-		$this->addFilter('sass', new CssRelativeRewrite($this)); // first fix relative urls
+		
         $sass = new Sass($this);
         $sass->setIfDebugCallable([$sass, 'addDebugFlags']);
         $this->addFilter('sass', $sass);
+        $this->addFilter('sass', new CssRelativeRewrite($this)); 
         $this->addFilter('sass', new UglifyCss($this));
         // js
         $this->addFilter('js', new UglifyJs($this));
