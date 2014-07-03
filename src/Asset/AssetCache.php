@@ -47,6 +47,7 @@ class AssetCache
         $name = $this->asset->generateOutputName($this->filters)->getOutputName();
         
         if($path = realpath($this->cacheDirectory.'/'.$name)) {
+            
             $asset = clone $this->asset;
             // @todo better mechanism to hook into content?
             $asset->setContent(

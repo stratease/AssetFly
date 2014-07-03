@@ -119,7 +119,7 @@ abstract class AssetBase implements AssetInterface
         $hash = sha1(json_encode($filters).
             filemtime($this->getSourcePath()).
             $this->getSourcePath());
-        $path = $this->cleanOutputName($hash.$this->hashNameSeparator.$fileName);
+        $path = $hash.$this->hashNameSeparator.$fileName;
 
         $this->setOutputName($path);
 
@@ -240,25 +240,6 @@ abstract class AssetBase implements AssetInterface
         }        
 
         return $this;
-    }
-
-
-    /**
-     * @param $path
-     * @return mixed
-     */
-    public function cleanOutputName($path)
-    {
-        $pathSplit = explode("_", basename($path));
-
-        if(count($pathSplit) > 2)
-        {
-            $a = array_pop($pathSplit);
-            $b = array_pop($pathSplit);
-            $path = dirname($path).'/'.$b.$this->hashNameSeparator.$a;
-        }
-
-        return str_replace("//", "/", $path);
     }
 
 
