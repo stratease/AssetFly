@@ -40,7 +40,8 @@ class CssRelativeRewrite extends FilterBase
 				function($matches) use ($sourceDir) {
 					// if it's relative, just prepend with our source dir
 					if(substr($matches['url'], 0, 1) != '/'
-						&& substr($matches['url'], 0, 5) != 'http:') {
+						&& substr($matches['url'], 0, 5) != 'http:'
+						&& substr($matches['url'], 0, 5) != 'data:') {
 
 						return str_replace($matches['url'], $sourceDir.'/'.$matches['url'], $matches[0]);
 					}
