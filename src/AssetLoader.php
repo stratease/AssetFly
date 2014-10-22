@@ -293,7 +293,7 @@ class AssetLoader
      * @param $outputGroup
      * @return array
      */
-    public function getAssetUrls($outputGroup)
+    public static function getAssetUrls($outputGroup)
     {
         $urls = [];
         $assetLoader = new AssetLoader();
