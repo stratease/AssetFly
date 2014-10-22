@@ -2,6 +2,7 @@
 namespace stratease\AssetFly\Filter;
 use stratease\AssetFly\Filter\FilterBase;
 use stratease\AssetFly\Util\ConfiguratorTrait;
+use stratease\AssetFly\AssetLoader;
 use Symfony\Component\Process\ProcessBuilder;
 abstract class ConsoleFilterBase extends FilterBase
 {
@@ -42,7 +43,7 @@ abstract class ConsoleFilterBase extends FilterBase
         $pb->setTimeout($this->getTimeout());
 
         // if debug add special stuff..
-        if($this->assetLoader->getDebug()) {
+        if(AssetLoader::getDebug()) {
             if($callable = $this->getIfDebugCallable()) {
                 call_user_func($callable, $pb);
             }

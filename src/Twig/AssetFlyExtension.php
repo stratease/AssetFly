@@ -1,18 +1,12 @@
 <?php
 namespace stratease\AssetFly\Twig;
 use stratease\AssetFly\AssetLoader;
-use Phive\Twig\Extensions\Deferred\DeferredExtension;
+
 use stratease\AssetFly\Asset\Assets\TextFile;
-class TwigExtension extends \Twig_Extension
+class AssetFlyExtension extends \Twig_Extension
 {
     protected $assetLoader;
-    public function __construct(\Twig_Environment $environment, AssetLoader $assetLoader)
-    {
-        // lets just add deferred
-        $environment->addExtension(new DeferredExtension());
 
-        $this->assetLoader = $assetLoader;
-    }
     public function getFunctions()
     {
         $funcs = [];
@@ -24,13 +18,13 @@ class TwigExtension extends \Twig_Extension
     }
     public function addAsset($filterGroup, $webFile, $outputGroup)
     {
-        $asset = new TextFile($this->assetLoader, $this->assetLoader->getWebDirectory().'/'.$webFile);
+        $asset = new TextFile(AssetLoader::getWebDirectory().DIRECTORY_SEPARATOR.$webFile);
         
-        $this->assetLoader->addAsset($filterGroup, $outputGroup, $asset);
+        AssetLoader::addAsset($filterGroup, $outputGroup, $asset);
     }
     public function getAssetUrls($outputGroup)
     {
-        return $this->assetLoader->getAssetUrls($outputGroup);        
+        return AssetLoader::getAssetUrls($outputGroup);
     }
     public function getName()
     {

@@ -3,7 +3,7 @@ namespace stratease\AssetFly\Filter\Filters;
 use stratease\AssetFly\Asset\AssetBase;
 use stratease\AssetFly\Asset\AssetInterface;
 use stratease\AssetFly\Filter\FilterBase;
-
+use stratease\AssetFly\AssetLoader;
 
 
 class CssRelativeRewrite extends FilterBase
@@ -29,7 +29,7 @@ class CssRelativeRewrite extends FilterBase
         $content = $asset->getContent();
 		
 		$targetDir = $asset->getDumpDirectory();
-		$sourceDir = str_replace($this->assetLoader->getWebDirectory(), '', dirname($asset->getSourcePath())); // strip web dir off
+		$sourceDir = str_replace(AssetLoader::getWebDirectory(), '', dirname($asset->getSourcePath())); // strip web dir off
 		
 		// iterate and cleanup the relative paths
 		$regexs = ['/url\((["\']?)(?P<url>.*?)(\\1)\)/',

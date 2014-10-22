@@ -7,35 +7,15 @@ use Symfony\Component\Process\ProcessBuilder;
 abstract class FilterBase implements FilterInterface
 {
     use ConfiguratorTrait;
-
+    protected $ifDebugCallable;
     /**
      * @var AssetLoader
      */
     protected $assetLoader;
 
-    public function __construct(AssetLoader $assetLoader, array $options = [])
+    public function __construct(array $options = [])
     {
-        $this->setAssetLoader($assetLoader);
         $this->loadOptions($options);
-    }
-
-    /**
-     * @param AssetLoader $value The loader
-     * @return $this
-     */
-    public function setAssetLoader($value)
-    {
-        $this->assetLoader = $value;
-
-        return $this;
-    }
-
-    /**
-     * @return AssetLoader The loader
-     */
-    public function getAssetLoader()
-    {
-        return $this->assetLoader;
     }
 
     /**

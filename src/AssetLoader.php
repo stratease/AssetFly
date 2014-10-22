@@ -18,116 +18,125 @@ class AssetLoader
     /**
      * @var string Directory relative to the web root where we dump compiled css files
      */
-    protected $dumpCssDirectory = 'css/';
+    protected static $dumpCssDirectory = 'css/';
     /**
-     * @var string Directory relative to the web root where we dumpe compiled js files
+     * @var string Directory relative to the web root where we dump compiled js files
      */
-    protected $dumpJsDirectory = 'js/';
+    protected static $dumpJsDirectory = 'js/';
     /**
      * @var bool Flag to cache the compiled file for subsequent requests
      */
-    protected $cache = true;
+    protected static $cache = true;
     /**
      * @var string Path to the web/document root. Various other relative paths will use this as the prepend
      */
-    protected $webDirectory;
+    protected static $webDirectory;
 
     /**
      * @var bool Flag to output raw and precompiled files, no minification or concatting done
      */
-    protected $debug = false;
-    
+    protected static $debug = false;
+    /**
+     * @var bool Flag whether init was already run
+     */
+    protected static $wasInitd = false;
     /**
      *@var bool internal flag to determine if we compiled filters yet
      */
-    protected $isCompiled = false;
-    protected $filters = [];
-    protected $assets = [];
+    protected static $isCompiled = false;
+    protected static $filters = [];
+    protected static $assets = [];
     /**
      * @param array $options
      */
     public function __construct(array $options = array())
     {
         $this->loadOptions($options);
-        $this->init();
+        self::init();
     }
 
-    public function init()
+    /**
+     * Loads a standard set of filters
+     * @throws \Exception
+     */
+    public static function init()
     {
-        // setup predefined filter groups
-        // vanilla css
-		$this->addFilter('css', new CssRelativeRewrite($this)); // first fix relative urls
-        $this->addFilter('css', new UglifyCss($this));
+        if(!self::$wasInitd) {
+            // setup predefined filter groups
+            // vanilla css
+            self::addFilter('css', new CssRelativeRewrite()); // first fix relative urls
+            self::addFilter('css', new UglifyCss());
 
-        // sass
-		
-        $sass = new Sass($this);
-        $sass->setIfDebugCallable([$sass, 'addDebugFlags']);
-        $this->addFilter('sass', $sass);
-        $this->addFilter('sass', new CssRelativeRewrite($this)); 
-        $this->addFilter('sass', new UglifyCss($this));
-        // js
-        $this->addFilter('js', new UglifyJs($this));
+            // sass
+            $sass = new Sass();
+            $sass->setIfDebugCallable([$sass, 'addDebugFlags']);
+            self::addFilter('sass', $sass);
+            self::addFilter('sass', new CssRelativeRewrite());
+            self::addFilter('sass', new UglifyCss());
+            // js
+            self::addFilter('js', new UglifyJs());
+            self::$wasInitd = true;
+        }
     }
     /**
      * @param bool $value Flag for caching
      * @return $this
      */
-    public function setCache($value)
+    public static function setCache($value)
     {
-        $this->cache = $value;
-
-        return $this;
+        self::$cache = $value;
     }
 
     /**
      * @return bool Flag for caching
      */
-    public function getCache()
+    public static function doCache()
     {
-        return $this->cache;
+        return self::$cache;
     }
 
     /**
      * @param string $value Absolute path to web root
      * @return $this
      */
-    public function setWebDirectory($value)
+    public static function setWebDirectory($value)
     {
-        $this->webDirectory = $value;
-
-        return $this;
+        self::$webDirectory = $value;
     }
 
     /**
-     * @return string Absolute path to web root
+     * @return string Absolute path to webs document root
      */
-    public function getWebDirectory()
+    public static function getWebDirectory()
     {
-		if(!$this->webDirectory
-		   || !realpath($this->webDirectory)) {			
-			throw new \Exception("Unable to locate the web directory '".$this->webDirectory."'. You must define a valid web directory.");
+        // default?
+        if(!self::$webDirectory
+            && isset($_SERVER['DOCUMENT_ROOT'])) {
+            self::$webDirectory = $_SERVER['DOCUMENT_ROOT'];
+        }
+		if(!self::$webDirectory
+		   || !realpath(self::$webDirectory)) {			
+			throw new \Exception("Unable to locate the web directory '".self::$webDirectory."'. You must define a valid web directory.");
 		}
-        return $this->webDirectory;
+
+        return self::$webDirectory;
     }
 
     /**
      * @param $filterGroup
      * @param FilterInterface $filter
      * @throws \Exception
-     * @return $this
+     
      */
-    public function addFilter($filterGroup, FilterInterface $filter)
+    public static function addFilter($filterGroup, FilterInterface $filter)
     {
         // filter group must be alpha numeric, underscored
         if(preg_match('/[^a-zA-Z0-9_]/', $filterGroup)) {
            throw new \Exception("Filter Group '".$filterGroup."' name is invalid. It may only be alpha numeric with underscores.");
         }
-        $filters = isset($this->filters[$filterGroup]) ? $this->filters[$filterGroup] : [];
+        $filters = isset(self::$filters[$filterGroup]) ? self::$filters[$filterGroup] : [];
         $filters[] = $filter;
-        $this->filters[$filterGroup] = $filters;
-
-        return $this;
+        self::$filters[$filterGroup] = $filters;
     }
 
     /**
@@ -135,50 +144,54 @@ class AssetLoader
      * @param $filterGroup
      * @param $outputGroup
      * @param AssetInterface $asset
-     * @return $this
      * @throws \Exception
      */
-    public function addAsset($filterGroup, $outputGroup, AssetInterface $asset)
+    public static function addAsset($filterGroup, $outputGroup, AssetInterface $asset)
     {
         $asset->setFilterGroup($filterGroup);
 
-        $assets = isset($this->assets[$outputGroup]) ? $this->assets[$outputGroup] : [];
+        $assets = isset(self::$assets[$outputGroup]) ? self::$assets[$outputGroup] : [];
         $assets[] = $asset;
 
-        $this->assets[$outputGroup] = $assets;
-        
-        return $this;
+        self::$assets[$outputGroup] = $assets;
     }
+
     /**
      *
      * @param $value
-     * @return $this
      */
-    public function setDebug($value)
+    public static function setDebug($value)
     {
-        $this->debug = $value;
-
-        return $this;
+        self::$debug = $value;
     }
-    
-    public function getFilters($filterGroup = null)
+
+    /**
+     * @param null $filterGroup
+     * @return array
+     */
+    public static function getFilters($filterGroup = null)
     {
         if($filterGroup === null) {
           
-            return $this->filters;
+            return self::$filters;
         } else {
           
-            return isset($this->filters[$filterGroup]) ? $this->filters[$filterGroup] : [];
+            return isset(self::$filters[$filterGroup]) ? self::$filters[$filterGroup] : [];
         }
     }
-    public function getAssets($outputGroup = null)
+
+    /**
+     * @param null $outputGroup
+     * @return array
+     */
+    public static function getAssets($outputGroup = null)
     {
         if($outputGroup === null) {
           
-            return $this->assets;
+            return self::$assets;
         } else {
           
-            return isset($this->assets[$outputGroup]) ? $this->assets[$outputGroup] : [];
+            return isset(self::$assets[$outputGroup]) ? self::$assets[$outputGroup] : [];
         }
     }
 
@@ -189,23 +202,23 @@ class AssetLoader
      */
     public function compile($outputGroup)
     {
-        $assets = $this->getAssets($outputGroup);
+        $assets = self::getAssets($outputGroup);
 
         // process all the assets 
         foreach($assets as $i => $asset)
         {
-            if($filters = $this->getFilters($asset->getFilterGroup())) {
+            if($filters = self::getFilters($asset->getFilterGroup())) {
                 // check if cached
-                $dir = str_replace("//", "/", $this->getWebDirectory().'/'.$asset->getDumpDirectory());
+                $dir = str_replace("//", "/", self::getWebDirectory().'/'.$asset->getDumpDirectory());
                 $assetCache = new AssetCache($dir, $asset, $filters);
                 // cached ??
-                if($this->getCache() === true
+                if(self::doCache() === true
                     && ($aCache = $assetCache->getCache())) {
                     $asset = $aCache;
                 // else not cached, process
                 } else {
                     // if debug (dev mode) only do precompilers
-                    if($this->getDebug()) {
+                    if(self::getDebug()) {
                         foreach($filters as $filter)
                         {
                             if($filter::isPrecompiler()) {
@@ -255,39 +268,41 @@ class AssetLoader
                     return null;
             }
             // our concat file path
-            $filePath = $this->getWebDirectory().'/'.
+            $filePath = self::getWebDirectory().'/'.
                     $assets[0]->getDumpDirectory().'/'.
                     sha1(json_encode($assets)).'_cat.'.$ext;
 
             // check if file exists...
             if($path = realpath($filePath)) {
-                $asset = new TextFile($this, $path);
+                $asset = new TextFile($path);
             }
             else {
                 // if it doesn't generate...
                 foreach($assets as $ass) {
                     file_put_contents($filePath, $ass->getContent()."\n", FILE_APPEND);
                 }
-                $asset = new TextFile($this, $filePath);
+                $asset = new TextFile($filePath);
             }
 
             // return our new asset
             return $asset;
         }
-
-
     }
 
+    /**
+     * @param $outputGroup
+     * @return array
+     */
     public function getAssetUrls($outputGroup)
     {
         $urls = [];
-        
-        $assets = $this->compile($outputGroup);
+        $assetLoader = new AssetLoader();
+        $assets = $assetLoader->compile($outputGroup);
         // if debug output each asset separately
         // else concat 'em
-        if(!$this->getDebug()) {
+        if(!self::getDebug()) {
             // @todo This should be encapsulated into a post processing hook, as this depends on the file type, more of an asset collection responsibility.
-            if($asset = $this->concat($assets)) {
+            if($asset = $assetLoader->concat($assets)) {
                 $assets = [$asset];
             }
 
@@ -306,31 +321,29 @@ class AssetLoader
      * Gets debug
      * @return debug
      */
-    public function getDebug()
+    public static function getDebug()
     {
-        return $this->debug;
+        return self::$debug;
     }
 
 
-    public function setDumpCssDirectory($dir)
+    public static function setDumpCssDirectory($dir)
     {
-        $this->dumpCssDirectory = $dir;
-        return $this;
+        self::$dumpCssDirectory = $dir;
     }
 
-    public function setDumpJsDirectory($dir)
+    public static function setDumpJsDirectory($dir)
     {
-        $this->dumpJsDirectory = $dir;
-        return $this;
+        self::$dumpJsDirectory = $dir;
     }
 
     public function getDumpJsDirectory()
     {
-        return $this->dumpJsDirectory;
+        return self::$dumpJsDirectory;
     }
 
     public function getDumpCssDirectory()
     {
-        return $this->dumpCssDirectory;
+        return self::$dumpCssDirectory;
     }
 }

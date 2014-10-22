@@ -41,9 +41,8 @@ abstract class AssetBase implements AssetInterface
      * @param string $sourceFile Absolute path to source file
      * @param array $options
      */
-    public function __construct(AssetLoader $assetLoader, $sourceFile, array $options = [])
+    public function __construct($sourceFile, array $options = [])
     {
-        $this->setAssetLoader($assetLoader);
 
         $this->setSourcePath($sourceFile);
         $this->loadOptions($options);
@@ -58,30 +57,12 @@ abstract class AssetBase implements AssetInterface
             case AssetBase::F_SASS:
             case AssetBase::F_SCSS:
             case AssetBase::F_CSS:
-                $this->setDumpDirectory($this->assetLoader->getDumpCssDirectory());
+                $this->setDumpDirectory(AssetLoader::getDumpCssDirectory());
                 break;
             case AssetBase::F_JS:
-                $this->setDumpDirectory($this->assetLoader->getDumpJsDirectory());
+                $this->setDumpDirectory(AssetLoader::getDumpJsDirectory());
                 break;
         }
-    }
-    /**
-     * @param AssetLoader $value
-     * @return $this
-     */
-    public function setAssetLoader($value)
-    {
-        $this->assetLoader = $value;
-
-        return $this;
-    }
-
-    /**
-     * @return
-     */
-    public function getAssetLoader()
-    {
-        return $this->assetLoader;
     }
 
 
@@ -245,7 +226,7 @@ abstract class AssetBase implements AssetInterface
 
     public function dumpToOutput()
     {
-        $this->save($this->assetLoader->getWebDirectory().'/'.$this->getOutputPath());
+        $this->save(AssetLoader::getWebDirectory().'/'.$this->getOutputPath());
 
         return $this;
     }
