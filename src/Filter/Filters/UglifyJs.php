@@ -35,7 +35,7 @@ class UglifyJs extends ConsoleFilterBase
         }
 
 
-        return $asset->iterateNewAsset($proc->getOutput());
+        return $asset->setContent($proc->getOutput());
     }
 
 

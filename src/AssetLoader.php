@@ -337,12 +337,12 @@ class AssetLoader
         self::$dumpJsDirectory = $dir;
     }
 
-    public function getDumpJsDirectory()
+    public static function getDumpJsDirectory()
     {
         return self::$dumpJsDirectory;
     }
 
-    public function getDumpCssDirectory()
+    public static function getDumpCssDirectory()
     {
         return self::$dumpCssDirectory;
     }
