@@ -134,7 +134,7 @@ abstract class AssetBase implements AssetInterface
      */
     public function setSourcePath($sourceFile)
     {
-        $this->sourcePath = realpath($sourceFile);
+        $this->sourcePath = $sourceFile;
         // check for our file
         if(is_file($this->sourcePath) === false) {
             throw new \Exception("Unable to locate assets source file '".$sourceFile."'.");

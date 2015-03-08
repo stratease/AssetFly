@@ -18,11 +18,11 @@ class AssetLoader
     /**
      * @var string Directory relative to the web root where we dump compiled css files
      */
-    protected static $dumpCssDirectory = 'css/';
+    protected static $dumpCssDirectory = '/assets/css/';
     /**
      * @var string Directory relative to the web root where we dump compiled js files
      */
-    protected static $dumpJsDirectory = 'js/';
+    protected static $dumpJsDirectory = '/assets/js/';
     /**
      * @var bool Flag to cache the compiled file for subsequent requests
      */
@@ -273,8 +273,8 @@ class AssetLoader
                     sha1(json_encode($assets)).'_cat.'.$ext;
 
             // check if file exists...
-            if($path = realpath($filePath)) {
-                $asset = new TextFile($path);
+            if(is_file($filePath)) {
+                $asset = new TextFile($filePath);
             }
             else {
                 // if it doesn't generate...

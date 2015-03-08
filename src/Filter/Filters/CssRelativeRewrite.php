@@ -29,8 +29,8 @@ class CssRelativeRewrite extends FilterBase
         $content = $asset->getContent();
 		
 		$targetDir = $asset->getDumpDirectory();
-		$sourceDir = str_replace(AssetLoader::getWebDirectory(), '', dirname($asset->getSourcePath())); // strip web dir off
-		
+		$sourceDir = str_replace('//', '/', str_replace(AssetLoader::getWebDirectory(), '', dirname($asset->getSourcePath()))); // strip web dir off
+
 		// iterate and cleanup the relative paths
 		$regexs = ['/url\((["\']?)(?P<url>.*?)(\\1)\)/',
 						'/@import (?:url\()?(\'|"|)(?P<url>[^\'"\)\n\r]*)\1\)?;?/',
