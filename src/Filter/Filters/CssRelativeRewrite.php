@@ -44,7 +44,10 @@ class CssRelativeRewrite extends FilterBase
 						&& substr($matches['url'], 0, 5) != 'data:') {
 
 						return str_replace($matches['url'], $sourceDir.'/'.$matches['url'], $matches[0]);
-					}
+					} else {
+
+                        return str_replace("http://", "//", $matches[0]);
+                    }
 					
 					return $matches[0];
 				}, $content);
